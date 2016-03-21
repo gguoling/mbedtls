@@ -56,6 +56,9 @@ set(src_crypto
     version_features.c
     xtea.c
 )
+if(MSVC)
+	list(APPEND src_crypto mbedcrypto.def)
+endif()
 
 set(src_x509
     certs.c
@@ -68,6 +71,9 @@ set(src_x509
     x509write_crt.c
     x509write_csr.c
 )
+if(MSVC)
+	list(APPEND src_x509 mbedx509.def)
+endif()
 
 set(src_tls
     debug.c
@@ -80,6 +86,9 @@ set(src_tls
     ssl_ticket.c
     ssl_tls.c
 )
+if(MSVC)
+	list(APPEND src_tls mbedtls.def)
+endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-declarations -Wmissing-prototypes")
