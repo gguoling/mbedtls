@@ -34,11 +34,27 @@
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && !defined(EFIX64) && \
     !defined(EFI32)
 
+#if defined(__MINGW32__) || !defined(WINAPI_FAMILY_PARTITION) || !defined(WINAPI_PARTITION_DESKTOP)
+#define MBEDTLS_WINDOWS_DESKTOP 1
+#elif defined(WINAPI_FAMILY_PARTITION)
+#if defined(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#define MBEDTLS_WINDOWS_DESKTOP 1
+#elif defined(WINAPI_PARTITION_PHONE_APP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+#define MBEDTLS_WINDOWS_PHONE 1
+#elif defined(WINAPI_PARTITION_APP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define MBEDTLS_WINDOWS_UNIVERSAL 1
+#endif
+#endif
+
+#ifdef MBEDTLS_WINDOWS_UNIVERSAL
+/* Do not redefine _WIN32_WINNT for Windows Universal App */
+#else
 #ifdef _WIN32_WINNT
 #undef _WIN32_WINNT
 #endif
 /* Enables getaddrinfo() & Co */
 #define _WIN32_WINNT 0x0501
+#endif
 #include <ws2tcpip.h>
 
 #include <winsock2.h>

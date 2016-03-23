@@ -255,7 +255,6 @@ EXPORTS
 	mbedtls_entropy_update_seed_file
 	mbedtls_entropy_self_test
 EXPORTS 
-	mbedtls_platform_entropy_poll
 	mbedtls_hardclock_poll
 EXPORTS 
 	mbedtls_strerror
