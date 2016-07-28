@@ -59,6 +59,9 @@ set(src_crypto
 if(MSVC)
 	list(APPEND src_crypto mbedcrypto.def)
 endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+    list(APPEND src_crypto entropy_poll_win10.cc)
+endif()
 
 set(src_x509
     certs.c
@@ -152,6 +155,14 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
     add_library(mbedcrypto SHARED ${src_crypto})
     set_target_properties(mbedcrypto PROPERTIES VERSION 2.2.1 SOVERSION 0)
     target_link_libraries(mbedcrypto ${libs})
+    if(CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            set(_debug "d")
+        endif()
+        set_target_properties(mbedcrypto PROPERTIES LINK_FLAGS "/NODEFAULTLIB:vccorlib${_debug} /NODEFAULTLIB:msvcrt${_debug}")
+        set_target_properties(mbedcrypto PROPERTIES VS_WINRT_COMPONENT TRUE)
+        target_link_libraries(mbedcrypto vccorlib${_debug}.lib msvcrt${_debug}.lib)
+    endif()
 
     add_library(mbedx509 SHARED ${src_x509})
     set_target_properties(mbedx509 PROPERTIES VERSION 2.2.1 SOVERSION 0)

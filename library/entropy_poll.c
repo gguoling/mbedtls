@@ -41,10 +41,25 @@
 #if !defined(MBEDTLS_NO_PLATFORM_ENTROPY)
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 
+#if defined(__MINGW32__) || !defined(WINAPI_FAMILY_PARTITION) || !defined(WINAPI_PARTITION_DESKTOP)
+#define MBEDTLS_WINDOWS_DESKTOP 1
+#elif defined(WINAPI_FAMILY_PARTITION)
+#if defined(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#define MBEDTLS_WINDOWS_DESKTOP 1
+#elif defined(WINAPI_PARTITION_PHONE_APP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_PHONE_APP)
+#define MBEDTLS_WINDOWS_PHONE 1
+#elif defined(WINAPI_PARTITION_APP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define MBEDTLS_WINDOWS_UNIVERSAL 1
+#endif
+#endif
+
+#ifndef MBEDTLS_WINDOWS_UNIVERSAL
+
 #if !defined(_WIN32_WINNT)
 #define _WIN32_WINNT 0x0400
 #endif
 #include <windows.h>
+
 #include <wincrypt.h>
 
 int mbedtls_platform_entropy_poll( void *data, unsigned char *output, size_t len,
@@ -68,6 +83,9 @@ int mbedtls_platform_entropy_poll( void *data, unsigned char *output, size_t len
 
     return( 0 );
 }
+
+#endif
+
 #else /* _WIN32 && !EFIX64 && !EFI32 */
 
 /*
