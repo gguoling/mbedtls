@@ -1753,6 +1753,16 @@ read_record_header:
                 break;
 #endif /* MBEDTLS_SSL_ALPN */
 
+#if defined(MBEDTLS_SSL_DTLS_SRTP)
+            case MBEDTLS_TLS_EXT_USE_SRTP:
+                MBEDTLS_SSL_DEBUG_MSG( 3, ( "found use_srtp extension" ) );
+
+                ret = ssl_parse_use_srtp_ext( ssl, ext + 4, ext_size );
+                if ( ret != 0)
+                    return( ret );
+                break;
+#endif /* MBEDTLS_SSL_DTLS_SRTP */
+
             default:
                 MBEDTLS_SSL_DEBUG_MSG( 3, ( "unknown extension found: %d (ignoring)",
                                ext_id ) );
