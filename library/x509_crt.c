@@ -1142,7 +1142,7 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
             continue;
 
 		fileNameLen = 0;
-		StringCchLength( file_data.cFileName, len, &fileNameLen );
+		StringCchLengthW( file_data.cFileName, len, &fileNameLen );
         w_ret = WideCharToMultiByte( CP_ACP, 0, file_data.cFileName,
                                      (int) fileNameLen,
                                      p, (int) len - 1,
