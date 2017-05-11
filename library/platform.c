@@ -64,16 +64,14 @@ int mbedtls_platform_set_calloc_free( void * (*calloc_func)( size_t, size_t ),
 
 #if defined(_WIN32)
 #include <stdarg.h>
-int mbedtls_platform_win32_snprintf( char *s, size_t n, const char *fmt, ... )
+int mbedtls_platform_win32_snprintf( char *s, size_t n, const char *fmt, va_list argp )
 {
     int ret;
-    va_list argp;
 
     /* Avoid calling the invalid parameter handler by checking ourselves */
     if( s == NULL || n == 0 || fmt == NULL )
         return( -1 );
 
-    va_start( argp, fmt );
 #if defined(_TRUNCATE)
     ret = _vsnprintf_s( s, n, _TRUNCATE, fmt, argp );
 #else
@@ -84,7 +82,6 @@ int mbedtls_platform_win32_snprintf( char *s, size_t n, const char *fmt, ... )
         ret = -1;
     }
 #endif
-    va_end( argp );
 
     return( ret );
 }
@@ -107,15 +104,26 @@ static int platform_snprintf_uninit( char * s, size_t n,
 #define MBEDTLS_PLATFORM_STD_SNPRINTF    platform_snprintf_uninit
 #endif /* !MBEDTLS_PLATFORM_STD_SNPRINTF */
 
-int (*mbedtls_snprintf)( char * s, size_t n,
+int (*_mbedtls_snprintf)( char * s, size_t n,
                           const char * format,
-                          ... ) = MBEDTLS_PLATFORM_STD_SNPRINTF;
+                          va_list args ) = MBEDTLS_PLATFORM_STD_SNPRINTF;
+
+int mbedtls_snprintf(char * s, size_t n,
+	const char * format,
+	...) {
+	int ret;
+	va_list args;
+	va_start(args, format);
+	ret = _mbedtls_snprintf(s, n, format, args);
+	va_end(args);
+	return ret;
+}
 
 int mbedtls_platform_set_snprintf( int (*snprintf_func)( char * s, size_t n,
                                                  const char * format,
-                                                 ... ) )
+                                                 va_list args ) )
 {
-    mbedtls_snprintf = snprintf_func;
+    _mbedtls_snprintf = snprintf_func;
     return( 0 );
 }
 #endif /* MBEDTLS_PLATFORM_SNPRINTF_ALT */

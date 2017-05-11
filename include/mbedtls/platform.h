@@ -188,11 +188,13 @@ int mbedtls_platform_set_printf( int (*printf_func)( const char *, ... ) );
  */
 #if defined(_WIN32)
 /* For Windows (inc. MSYS2), we provide our own fixed implementation */
-int mbedtls_platform_win32_snprintf( char *s, size_t n, const char *fmt, ... );
+int mbedtls_platform_win32_snprintf( char *s, size_t n, const char *fmt, va_list args );
 #endif
 
 #if defined(MBEDTLS_PLATFORM_SNPRINTF_ALT)
-extern int (*mbedtls_snprintf)( char * s, size_t n, const char * format, ... );
+extern int (*_mbedtls_snprintf)( char * s, size_t n, const char * format, va_list args );
+
+int mbedtls_snprintf(char *s, size_t n, const char *format, ...);
 
 /**
  * \brief   Set your own snprintf function pointer
@@ -202,7 +204,7 @@ extern int (*mbedtls_snprintf)( char * s, size_t n, const char * format, ... );
  * \return              0
  */
 int mbedtls_platform_set_snprintf( int (*snprintf_func)( char * s, size_t n,
-                                                 const char * format, ... ) );
+                                                 const char * format, va_list args ) );
 #else /* MBEDTLS_PLATFORM_SNPRINTF_ALT */
 #if defined(MBEDTLS_PLATFORM_SNPRINTF_MACRO)
 #define mbedtls_snprintf   MBEDTLS_PLATFORM_SNPRINTF_MACRO

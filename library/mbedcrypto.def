@@ -379,6 +379,7 @@ EXPORTS
 	mbedtls_pk_write_pubkey
 EXPORTS 
 	mbedtls_platform_win32_snprintf
+	mbedtls_snprintf
 EXPORTS 
 	mbedtls_ripemd160_init
 	mbedtls_ripemd160_free
