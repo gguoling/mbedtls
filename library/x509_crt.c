@@ -62,6 +62,7 @@
 
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 #include <windows.h>
+#include <strsafe.h>
 #else
 #include <time.h>
 #endif
@@ -1139,8 +1140,10 @@ int mbedtls_x509_crt_parse_path( mbedtls_x509_crt *chain, const char *path )
         if( file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY )
             continue;
 
+		size_t fileNameLen = 0;
+		StringCchLengthW( file_data.cFileName, len, &fileNameLen );
         w_ret = WideCharToMultiByte( CP_ACP, 0, file_data.cFileName,
-                                     lstrlenW( file_data.cFileName ),
+                                     (int) fileNameLen,
                                      p, (int) len - 1,
                                      NULL, NULL );
         if( w_ret == 0 )
