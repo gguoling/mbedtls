@@ -475,8 +475,8 @@ static int x509_get_subject_alt_name( unsigned char **p,
             return( MBEDTLS_ERR_X509_INVALID_EXTENSIONS +
                     MBEDTLS_ERR_ASN1_UNEXPECTED_TAG );
 
-        /* Skip everything but DNS name */
-        if( tag != ( MBEDTLS_ASN1_CONTEXT_SPECIFIC | 2 ) )
+        /* Skip everything but DNS name or URI */
+        if( tag != ( MBEDTLS_ASN1_CONTEXT_SPECIFIC | 2 ) && tag != ( MBEDTLS_ASN1_CONTEXT_SPECIFIC | 6 ))
         {
             *p += tag_len;
             continue;
