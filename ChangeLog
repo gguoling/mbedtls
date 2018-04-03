@@ -6,6 +6,8 @@ Features
    * Add new crypto primitives from RFC 7539: stream cipher Chacha20, one-time
    authenticator Poly1305 and AEAD construct Chacha20-Poly1305. Contributed by
    Daniel King (#485).
+   * Add support for DTLS-SRTP as defined in RFC 5764. Based on contribution done
+     by Johan Pascal in #361.
 
 Changes
    * Change the shebang line in Perl scripts to look up perl in the PATH.
