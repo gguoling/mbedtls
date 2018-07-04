@@ -4436,8 +4436,8 @@ int mbedtls_ssl_parse_certificate( mbedtls_ssl_context *ssl )
 #endif
 #if defined(MBEDTLS_SSL_DTLS_SRTP)
     /* check if we have a chosen srtp protection profile */
-    if ( ssl->dtls_srtp_info.chosen_dtls_srtp_profile != MBEDTLS_SRTP_UNSET_PROFILE )
-        authmode = MBEDTLS_SSL_VERIFY_REQUIRED;
+    if ( ( ssl->dtls_srtp_info.chosen_dtls_srtp_profile != MBEDTLS_SRTP_UNSET_PROFILE ) && ( ssl->conf->authmode == MBEDTLS_SSL_VERIFY_NONE ) )
+        authmode = MBEDTLS_SSL_VERIFY_OPTIONAL;
     else
 #endif
         authmode = ssl->conf->authmode;
