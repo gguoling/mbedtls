@@ -137,12 +137,21 @@
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
  *
- * System has time.h and time(), gmtime() and the clock is correct.
+ * System has time.h, time(), and an implementation for
+ * mbedtls_platform_gmtime_r() (see below).
  * The time needs to be correct (not necesarily very accurate, but at least
  * the date should be correct). This is used to verify the validity period of
  * X.509 certificates.
  *
  * Comment if your system does not have a correct clock.
+ *
+ * \note mbedtls_platform_gmtime_r() is an abstraction in platform_util.h that
+ * behaves similarly to the gmtime_r() function from the C standard. Refer to
+ * the documentation for mbedtls_platform_gmtime_r() for more information.
+ *
+ * \note It is possible to configure an implementation for
+ * mbedtls_platform_gmtime_r() at compile-time by using the macro
+ * MBEDTLS_PLATFORM_GMTIME_R_ALT.
  */
 #define MBEDTLS_HAVE_TIME_DATE
 
@@ -308,6 +317,7 @@
 //#define MBEDTLS_DHM_ALT
 //#define MBEDTLS_ECJPAKE_ALT
 //#define MBEDTLS_GCM_ALT
+//#define MBEDTLS_NIST_KW_ALT
 //#define MBEDTLS_MD2_ALT
 //#define MBEDTLS_MD4_ALT
 //#define MBEDTLS_MD5_ALT
@@ -2260,6 +2270,19 @@
 #define MBEDTLS_HMAC_DRBG_C
 
 /**
+ * \def MBEDTLS_NIST_KW_C
+ *
+ * Enable the Key Wrapping mode for 128-bit block ciphers,
+ * as defined in NIST SP 800-38F. Only KW and KWP modes
+ * are supported. At the moment, only AES is approved by NIST.
+ *
+ * Module:  library/nist_kw.c
+ *
+ * Requires: MBEDTLS_AES_C and MBEDTLS_CIPHER_C
+ */
+//#define MBEDTLS_NIST_KW_C
+
+/**
  * \def MBEDTLS_MD_C
  *
  * Enable the generic message digest layer.
@@ -2962,7 +2985,68 @@
 //#define MBEDTLS_SSL_CACHE_DEFAULT_MAX_ENTRIES      50 /**< Maximum entries in cache */
 
 /* SSL options */
-//#define MBEDTLS_SSL_MAX_CONTENT_LEN             16384 /**< Maxium fragment length in bytes, determines the size of each of the two internal I/O buffers */
+
+/** \def MBEDTLS_SSL_MAX_CONTENT_LEN
+ *
+ * Maximum fragment length in bytes.
+ *
+ * Determines the size of both the incoming and outgoing TLS I/O buffers.
+ *
+ * Uncommenting MBEDTLS_SSL_IN_CONTENT_LEN and/or MBEDTLS_SSL_OUT_CONTENT_LEN
+ * will override this length by setting maximum incoming and/or outgoing
+ * fragment length, respectively.
+ */
+//#define MBEDTLS_SSL_MAX_CONTENT_LEN             16384
+
+/** \def MBEDTLS_SSL_IN_CONTENT_LEN
+ *
+ * Maximum incoming fragment length in bytes.
+ *
+ * Uncomment to set the size of the inward TLS buffer independently of the
+ * outward buffer.
+ */
+//#define MBEDTLS_SSL_IN_CONTENT_LEN              16384
+
+/** \def MBEDTLS_SSL_OUT_CONTENT_LEN
+ *
+ * Maximum outgoing fragment length in bytes.
+ *
+ * Uncomment to set the size of the outward TLS buffer independently of the
+ * inward buffer.
+ *
+ * It is possible to save RAM by setting a smaller outward buffer, while keeping
+ * the default inward 16384 byte buffer to conform to the TLS specification.
+ *
+ * The minimum required outward buffer size is determined by the handshake
+ * protocol's usage. Handshaking will fail if the outward buffer is too small.
+ * The specific size requirement depends on the configured ciphers and any
+ * certificate data which is sent during the handshake.
+ *
+ * For absolute minimum RAM usage, it's best to enable
+ * MBEDTLS_SSL_MAX_FRAGMENT_LENGTH and reduce MBEDTLS_SSL_MAX_CONTENT_LEN. This
+ * reduces both incoming and outgoing buffer sizes. However this is only
+ * guaranteed if the other end of the connection also supports the TLS
+ * max_fragment_len extension. Otherwise the connection may fail.
+ */
+//#define MBEDTLS_SSL_OUT_CONTENT_LEN             16384
+
+/** \def MBEDTLS_SSL_DTLS_MAX_BUFFERING
+ *
+ * Maximum number of heap-allocated bytes for the purpose of
+ * DTLS handshake message reassembly and future message buffering.
+ *
+ * This should be at least 9/8 * MBEDTLSSL_IN_CONTENT_LEN
+ * to account for a reassembled handshake message of maximum size,
+ * together with its reassembly bitmap.
+ *
+ * A value of 2 * MBEDTLS_SSL_IN_CONTENT_LEN (32768 by default)
+ * should be sufficient for all practical situations as it allows
+ * to reassembly a large handshake message (such as a certificate)
+ * while buffering multiple smaller handshake messages.
+ *
+ */
+//#define MBEDTLS_SSL_DTLS_MAX_BUFFERING             32768
+
 //#define MBEDTLS_SSL_DEFAULT_TICKET_LIFETIME     86400 /**< Lifetime of session tickets (if enabled) */
 //#define MBEDTLS_PSK_MAX_LEN               32 /**< Max size of TLS pre-shared keys, in bytes (default 256 bits) */
 //#define MBEDTLS_SSL_COOKIE_TIMEOUT        60 /**< Default expiration delay of DTLS cookies, in seconds if HAVE_TIME, or in number of cookies issued */
@@ -3036,10 +3120,29 @@
  */
 //#define MBEDTLS_PLATFORM_ZEROIZE_ALT
 
+/**
+ * Uncomment the macro to let Mbed TLS use your alternate implementation of
+ * mbedtls_platform_gmtime_r(). This replaces the default implementation in
+ * platform_util.c.
+ *
+ * gmtime() is not a thread-safe function as defined in the C standard. The
+ * library will try to use safer implementations of this function, such as
+ * gmtime_r() when available. However, if Mbed TLS cannot identify the target
+ * system, the implementation of mbedtls_platform_gmtime_r() will default to
+ * using the standard gmtime(). In this case, calls from the library to
+ * gmtime() will be guarded by the global mutex mbedtls_threading_gmtime_mutex
+ * if MBEDTLS_THREADING_C is enabled. We recommend that calls from outside the
+ * library are also guarded with this mutex to avoid race conditions. However,
+ * if the macro MBEDTLS_PLATFORM_GMTIME_R_ALT is defined, Mbed TLS will
+ * unconditionally use the implementation for mbedtls_platform_gmtime_r()
+ * supplied at compile time.
+ */
+//#define MBEDTLS_PLATFORM_GMTIME_R_ALT
+
 /* \} name SECTION: Customisation configuration options */
 
 /* Target and application specific configurations */
-//#define YOTTA_CFG_MBEDTLS_TARGET_CONFIG_FILE "mbedtls/target_config.h"
+//#define YOTTA_CFG_MBEDTLS_TARGET_CONFIG_FILE "target_config.h"
 
 #if defined(TARGET_LIKE_MBED) && defined(YOTTA_CFG_MBEDTLS_TARGET_CONFIG_FILE)
 #include YOTTA_CFG_MBEDTLS_TARGET_CONFIG_FILE
