@@ -1,6 +1,13 @@
 README for Mbed TLS
 ===================
 
+Important
+---------
+
+This version of mbedtls is an aggregation of LTS mbedtls version together with pr1813 (for SRTP-DTLS support), a pull request
+maintained by Belledonne Communications SARL.
+
+
 Configuration
 -------------
 

@@ -329,6 +329,10 @@ int main( void )
     "                        options: ssl3, tls1, tls1_1, tls1_2, dtls1, dtls1_2\n" \
     "\n"                                                    \
     "    force_ciphersuite=<name>    default: all enabled\n"\
+    "    query_config=<name>         return 0 if the specified\n"       \
+    "                                configuration macro is defined and 1\n"  \
+    "                                otherwise. The expansion of the macro\n" \
+    "                                is printed if it is defined\n"     \
     " acceptable ciphersuite names:\n"
 
 #define ALPN_LIST_SIZE  10
@@ -402,6 +406,8 @@ struct options
     int force_srtp_profile;     /* SRTP protection profile to use or all    */
     const char *mki;            /* The dtls mki value to use                */
 } opt;
+
+int query_config( const char *config );
 
 static void my_debug( void *ctx, int level,
                       const char *file, int line,
@@ -1073,6 +1079,10 @@ int main( int argc, char *argv[] )
         else if( strcmp( p, "mki" ) == 0 )
         {
             opt.mki = q;
+	}
+        else if( strcmp( p, "query_config" ) == 0 )
+        {
+            return query_config( q );
         }
         else
             goto usage;
