@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.1)
 if(TEST_CPP)
     project("mbed TLS" C CXX)
 else()
@@ -46,6 +46,9 @@ set(CTR_DRBG_128_BIT_KEY_WARNING "${WARNING_BORDER}"
                          "${CTR_DRBG_128_BIT_KEY_WARN_L3}"
                          "${WARNING_BORDER}")
 
+
+
+include(GNUInstallDirs)
 find_package(PythonInterp)
 find_package(Perl)
 if(PERL_FOUND)
@@ -161,11 +164,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
         set(CMAKE_SHARED_LINKER_FLAGS "--coverage")
     endif(CMAKE_COMPILER_IS_GNU OR CMAKE_COMPILER_IS_CLANG)
 endif(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-
-if(LIB_INSTALL_DIR)
-else()
-    set(LIB_INSTALL_DIR lib)
-endif()
 
 include_directories(include/)
 
